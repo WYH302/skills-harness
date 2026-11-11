@@ -1,0 +1,37 @@
+[
+  {
+    "source": "codex",
+    "externalId": "synthetic-skillopt-adoption-pdf",
+    "title": "公开构造示例：长文档证据比较与纠错",
+    "createdAt": "2026-10-26T10:00:00Z",
+    "completeness": "full",
+    "warnings": [],
+    "messages": [
+      {
+        "id": "synthetic-request",
+        "role": "user",
+        "text": "# AGENTS.md instructions\n<INSTRUCTIONS>仅供测试的系统说明，不应变成技能主题。</INSTRUCTIONS>\n<environment_context>仅供测试的环境说明。</environment_context>\n帮我把长 PDF 整理成有证据的比较报告，换文档后也能沿用这个方法。\n输入：研究问题、PDF 文档和需要比较的维度。\n输出：有来源引用的比较表，以及带证据的结论。\n验收标准：每条结论有页码或章节引用，区分事实和推断，未能读取的页面单独报告。"
+      },
+      {
+        "id": "synthetic-rejected-method",
+        "role": "assistant",
+        "text": "1. 读取文档标题并列出出现过的主题词。\n2. 收集主题词附近的段落，不记录页面位置。\n3. 按照主题词对段落进行简单分组。\n4. 编写一段没有引用标记的全文摘要。\n5. 依据摘要猜测作者没有明确写出的结论。\n6. 生成篇幅更长的报告来覆盖所有主题。"
+      },
+      {
+        "id": "synthetic-correction",
+        "role": "user",
+        "text": "不对，不要猜测，也不要用篇幅代替证据。改成更短的流程，并满足最初的验收标准。"
+      },
+      {
+        "id": "synthetic-corrected-method",
+        "role": "assistant",
+        "text": "1. 明确研究问题、比较维度和所需交付物，再定位相关章节。\n2. 读取相关页面，提取支持判断的原文并记录页码或章节；单独记录无法读取的页面。\n3. 按比较维度整理证据表，为每条比较结论附上对应的来源位置。\n4. 区分原文事实与分析推断，说明证据不足之处，输出有引用的报告。"
+      },
+      {
+        "id": "synthetic-approval",
+        "role": "user",
+        "text": "很好，这个方法符合要求，以后就这样整理长文档。"
+      }
+    ]
+  }
+]

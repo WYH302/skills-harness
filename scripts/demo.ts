@@ -1,0 +1,32 @@
+import { mkdtemp, mkdir, writeFile, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
+import { Store } from '../src/core/store';
+import { Pipeline, type Collector } from '../src/core/pipeline';
+import { demoConversations } from '../src/core/demo-data';
+import { portableMarkdown, exportSkills } from '../src/core/delivery';
+import { hash } from '../src/core/util';
+
+const dir=await mkdtemp(path.join(tmpdir(),'skillharbor-demo-'));
+const store=new Store(dir);
+let extra=false;
+const collector:Collector=async function*(source,options){for(const c of demoConversations(extra).filter(c=>c.source===source)){options.signal.throwIfAborted();yield {type:'conversation',conversation:c};}};
+const pipeline=new Pipeline(store,null,()=>{},()=>'',collector);
+const sources=demoConversations().map(c=>c.source);
+pipeline.start({sources});await pipeline.wait();
+const initial={stats:store.stats(),skills:store.skills().map(s=>({name:s.name,title:s.title,episodes:s.evidenceIds.length,valid:s.validation.valid,version:s.version})),run:pipeline.run};
+pipeline.start({sources});await pipeline.wait();
+const unchanged={stats:store.stats(),modelCalls:pipeline.run!.modelCalls,cached:pipeline.run!.cached,skipped:Object.values(pipeline.run!.sourceProgress).reduce((a,p)=>a+(p?.skipped||0),0),versions:store.skills().map(s=>s.version)};
+extra=true;pipeline.start({sources:[...sources,'opencode']});await pipeline.wait();
+const incremental={stats:store.stats(),modelCalls:pipeline.run!.modelCalls,skills:store.skills().map(s=>({name:s.name,episodes:s.evidenceIds.length,version:s.version}))};
+await mkdir('examples',{recursive:true});
+await writeFile('examples/histories.json',JSON.stringify(demoConversations(),null,2));
+const generatedRoot=path.resolve('examples','skills');
+if(path.dirname(generatedRoot)!==path.resolve('examples'))throw new Error('Invalid generated example output path');
+await rm(generatedRoot,{recursive:true,force:true});
+for(const s of store.skills()) {const out=path.join('examples','skills',s.name);await mkdir(out,{recursive:true});await writeFile(path.join(out,'SKILL.md'),portableMarkdown(s));}
+await writeFile('examples/generated-skills.zip',exportSkills(store.skills()));
+const report={data:'Synthetic only / 仅人工构造的非敏感资料',initial,unchanged,incremental,artifactHash:hash(exportSkills(store.skills()))};
+await writeFile('examples/DEMONSTRATION.json',JSON.stringify(report,null,2));
+process.stdout.write(JSON.stringify({initial:initial.stats,unchanged,incremental:incremental.stats,skills:initial.skills.map(s=>s.title)},null,2)+'\n');
+store.close();

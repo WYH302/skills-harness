@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Skills-Harness</title><link rel="stylesheet" href="popup.css"></head>
+<body>
+  <header><span class="mark">S</span><div><strong>Skills-Harness</strong><small>浏览器历史连接 · Browser bridge</small></div><button id="language" class="quiet" aria-label="Change language">EN</button></header>
+  <main>
+    <div class="privacy" data-zh="历史只传给这台电脑上的 Skills-Harness。扩展不会导出登录凭据。" data-en="History goes only to Skills-Harness on this computer. Sign-in credentials are never exported.">历史只传给这台电脑上的 Skills-Harness。扩展不会导出登录凭据。</div>
+    <section>
+      <h2 data-zh="1. 连接桌面应用" data-en="1. Connect the desktop app">1. 连接桌面应用</h2>
+      <label for="code" data-zh="输入应用「连接浏览器」中的配对码" data-en="Enter the code from Connect browser in the app">输入应用「连接浏览器」中的配对码</label>
+      <div class="pair"><input id="code" autocomplete="off" maxlength="20" placeholder="123456" aria-label="Pairing code"><button id="pair" class="primary" data-zh="配对" data-en="Pair">配对</button></div>
+      <p id="connection" role="status"></p>
+    </section>
+    <section>
+      <h2 data-zh="2. 允许需要采集的网站" data-en="2. Allow the selected websites">2. 允许需要采集的网站</h2>
+      <div id="sources"></div>
+      <button id="allow" class="outline" data-zh="允许选中的网站" data-en="Allow selected websites">允许选中的网站</button>
+    </section>
+    <div class="next" data-zh="在浏览器登录相应网站，然后回到桌面应用勾选来源，点击「收集历史并生成 Skills」。" data-en="Sign in to the websites, then select sources in the desktop app and click Collect History & Generate Skills.">在浏览器登录相应网站，然后回到桌面应用勾选来源，点击「收集历史并生成 Skills」。</div>
+    <p class="muted" data-zh="Perplexity 及接口失效时的页面采集属于部分读取。完整性和失败项会显示在桌面应用中。" data-en="Perplexity and page fallbacks provide partial coverage. The desktop app reports limitations and failures.">Perplexity 及接口失效时的页面采集属于部分读取。完整性和失败项会显示在桌面应用中。</p>
+    <footer><button id="refresh" class="quiet" data-zh="刷新状态" data-en="Refresh status">刷新状态</button><button id="unpair" class="quiet" data-zh="断开配对" data-en="Disconnect">断开配对</button><span>0.1.5</span></footer>
+  </main><script type="module" src="popup.mjs"></script>
+</body></html>

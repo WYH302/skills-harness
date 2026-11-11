@@ -1,0 +1,202 @@
+{
+  "data": "Synthetic only / 仅人工构造的非敏感资料",
+  "initial": {
+    "stats": {
+      "conversations": 8,
+      "messages": 22,
+      "episodes": 8,
+      "skills": 3
+    },
+    "skills": [
+      {
+        "name": "personal-procedure-7a67bf22",
+        "title": "定位应用故障并验证最小范围的修复",
+        "episodes": 2,
+        "valid": true,
+        "version": 1
+      },
+      {
+        "name": "personal-procedure-932eafea",
+        "title": "围绕研究问题分析长文档并交付证据报告",
+        "episodes": 2,
+        "valid": true,
+        "version": 1
+      },
+      {
+        "name": "personal-procedure-327be395",
+        "title": "面向新手评估一个开源工具是否值得采用",
+        "episodes": 2,
+        "valid": true,
+        "version": 1
+      }
+    ],
+    "run": {
+      "id": "eb9f9046-97d2-47cf-820b-1206413d5f69",
+      "outputLanguage": "zh",
+      "status": "completed",
+      "stage": "done",
+      "startedAt": "2026-11-11T13:16:35.306Z",
+      "sources": [
+        "chatgpt",
+        "claude",
+        "gemini",
+        "codex",
+        "claude-code",
+        "cursor"
+      ],
+      "sourceProgress": {
+        "chatgpt": {
+          "discovered": 2,
+          "imported": 2,
+          "skipped": 0,
+          "failed": 0,
+          "messages": 5,
+          "status": "done",
+          "detail": ""
+        },
+        "claude": {
+          "discovered": 2,
+          "imported": 2,
+          "skipped": 0,
+          "failed": 0,
+          "messages": 5,
+          "status": "done",
+          "detail": ""
+        },
+        "gemini": {
+          "discovered": 1,
+          "imported": 1,
+          "skipped": 0,
+          "failed": 0,
+          "messages": 3,
+          "status": "done",
+          "detail": ""
+        },
+        "codex": {
+          "discovered": 1,
+          "imported": 1,
+          "skipped": 0,
+          "failed": 0,
+          "messages": 3,
+          "status": "done",
+          "detail": ""
+        },
+        "claude-code": {
+          "discovered": 1,
+          "imported": 1,
+          "skipped": 0,
+          "failed": 0,
+          "messages": 3,
+          "status": "done",
+          "detail": ""
+        },
+        "cursor": {
+          "discovered": 1,
+          "imported": 1,
+          "skipped": 0,
+          "failed": 0,
+          "messages": 3,
+          "status": "done",
+          "detail": ""
+        }
+      },
+      "episodes": 8,
+      "skills": 3,
+      "modelCalls": 0,
+      "inputChars": 0,
+      "cached": 0,
+      "warnings": [
+        "ChatGPT: Synthetic example / 人工构造的非敏感示例",
+        "Claude: Synthetic example / 人工构造的非敏感示例",
+        "Gemini: Synthetic example / 人工构造的非敏感示例",
+        "Codex: Synthetic example / 人工构造的非敏感示例",
+        "Claude Code: Synthetic example / 人工构造的非敏感示例",
+        "Cursor: Synthetic example / 人工构造的非敏感示例",
+        "先本地整理并选择代表材料；未选中的片段仍在本机，不代表全部历史已由模型逐字分析。TF-IDF 按词汇和操作相似度分组，可能漏掉跨语言近义方法。 / Local preparation precedes generation. Unselected episodes remain local; this is not exhaustive model reading. Lexical TF-IDF can miss cross-language equivalents."
+      ],
+      "input": "collect",
+      "collectionComplete": true,
+      "processedConversations": 8,
+      "budgetSessionId": "eb9f9046-97d2-47cf-820b-1206413d5f69",
+      "usage": [],
+      "budget": {
+        "maxCalls": 12,
+        "maxChars": 120000
+      },
+      "analysisTotal": 3,
+      "selection": {
+        "method": "local-tfidf",
+        "histories": 8,
+        "rawChars": 2118,
+        "episodes": 8,
+        "duplicates": 0,
+        "groups": 3,
+        "representatives": 6,
+        "selectedChars": 2056,
+        "plannedInputChars": 0,
+        "plannedCalls": 0,
+        "cachedGroups": 0,
+        "completedGroups": 0,
+        "pendingGroups": 0,
+        "deferredGroups": 0,
+        "unselectedEpisodes": 2,
+        "preprocessingModelCalls": 0
+      },
+      "pendingAnalysis": 0,
+      "resources": {
+        "skills": 0,
+        "completed": 3,
+        "cached": 0,
+        "pending": 0,
+        "files": 0,
+        "plannedCalls": 0,
+        "plannedInputChars": 0
+      },
+      "supportedSkills": 3,
+      "finishedAt": "2026-11-11T13:16:35.387Z"
+    }
+  },
+  "unchanged": {
+    "stats": {
+      "conversations": 8,
+      "messages": 22,
+      "episodes": 8,
+      "skills": 3
+    },
+    "modelCalls": 0,
+    "cached": 8,
+    "skipped": 8,
+    "versions": [
+      1,
+      1,
+      1
+    ]
+  },
+  "incremental": {
+    "stats": {
+      "conversations": 9,
+      "messages": 25,
+      "episodes": 9,
+      "skills": 3
+    },
+    "modelCalls": 0,
+    "skills": [
+      {
+        "name": "personal-procedure-7a67bf22",
+        "episodes": 2,
+        "version": 1
+      },
+      {
+        "name": "personal-procedure-932eafea",
+        "episodes": 2,
+        "version": 1
+      },
+      {
+        "name": "personal-procedure-327be395",
+        "episodes": 3,
+        "version": 2
+      }
+    ]
+  },
+  "artifactHash": "35d97e18d8b2f42cc9de00d0bc88ac7c23f1bf9503920921812c6493a0d08a00"
+}

@@ -1,0 +1,10 @@
+import { spawn } from 'node:child_process';
+import { build } from 'esbuild';
+import { createServer } from 'vite';
+import electron from 'electron';
+await build({entryPoints:['src/main/main.ts'],bundle:true,platform:'node',target:'node24',format:'cjs',outfile:'dist/main/main.cjs',external:['electron']});
+await build({entryPoints:['src/main/preload.ts'],bundle:true,platform:'node',format:'cjs',outfile:'dist/main/preload.cjs',external:['electron']});
+const server=await createServer({server:{port:5173,host:'127.0.0.1'}});await server.listen();
+const env={...process.env,SKILLHARBOR_DEV_URL:'http://127.0.0.1:5173/'};delete env.ELECTRON_RUN_AS_NODE;
+const child=spawn(electron,['.'],{env,stdio:'inherit',windowsHide:true});
+child.on('exit',async()=>{await server.close();process.exit(0);});
