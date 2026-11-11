@@ -3,7 +3,7 @@
 
 # Skills-Harness (`skills-harness`) — English Guide
 
-**Turn scattered AI chat histories and coding agent trajectories into structured, reusable Agent Skills (`SKILL.md`).**
+**Automatically distill chat histories across AI web pages, apps, software, and local coding agent tools (including GPT, Claude, Gemini, Codex, Claude Code, Cursor, DeepSeek Harness, OpenClaw, Hermes, etc.) into Skills (`SKILL.md`).**
 
 [中文主文档 (Chinese & Bilingual README)](README.md) · [Installation](docs/INSTALL.md) · [Compatibility](docs/COMPATIBILITY.md) · [Privacy](docs/PRIVACY.md)
 

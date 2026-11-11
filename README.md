@@ -3,8 +3,8 @@
 
 # Skills-Harness (`skills-harness`)
 
-**将分散在各大 AI 助手与本地编程工具中的聊天历史，自动提炼为结构化、可复用的个人 Agent Skills（`SKILL.md`）。**  
-**Turn scattered AI chat histories and coding agent trajectories into structured, reusable Agent Skills (`SKILL.md`).**
+**将分散在各 AI 网页、AI 的 App、AI 的软件、AI 本地编程工具中的聊天历史（包括 GPT、Claude、Gemini、Codex、Claude Code、Cursor、DeepSeek Harness、OpenClaw、Hermes 等等），自动提炼为 Skills（`SKILL.md`）。**  
+**Automatically distill chat histories across AI web pages, apps, software, and local coding agent tools (including GPT, Claude, Gemini, Codex, Claude Code, Cursor, DeepSeek Harness, OpenClaw, Hermes, etc.) into Skills (`SKILL.md`).**
 
 [中文说明](#-项目简介) · [English Guide](#-english-overview) · [安装与运行](#-快速开始--quick-start) · [支持矩阵](#-支持平台矩阵--supported-ecosystem) · [隐私与安全](#-隐私与安全架构--privacy--security)
 
