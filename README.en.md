@@ -5,9 +5,21 @@
 
 **Automatically distill chat histories across AI web pages, apps, software, and local coding agent tools (including GPT, Claude, Gemini, Codex, Claude Code, Cursor, DeepSeek Harness, OpenClaw, Hermes, etc.) into Skills (`SKILL.md`).**
 
-[中文主文档 (Chinese & Bilingual README)](README.md) · [Installation](docs/INSTALL.md) · [Compatibility](docs/COMPATIBILITY.md) · [Privacy](docs/PRIVACY.md)
+[![Release](https://img.shields.io/github/v/release/WYH302/skills-harness?color=2563eb&label=Windows%20Release&logo=windows)](https://github.com/WYH302/skills-harness/releases/latest)
+[![License: MIT](https://img.shields.io/badge/License-MIT-emerald.svg)](LICENSE)
+[![Platform](https://img.shields.io/badge/Platform-Windows%20x64-neutral.svg)](https://github.com/WYH302/skills-harness/releases/latest)
+[![Tests](https://img.shields.io/badge/Tests-145%2F145%20Passing-success.svg)](tests/)
+
+[🚀 Direct Download (v0.1.14)](https://github.com/WYH302/skills-harness/releases/latest) · [Chinese & Bilingual README](README.md) · [Installation](docs/INSTALL.md) · [Compatibility](docs/COMPATIBILITY.md) · [Privacy](docs/PRIVACY.md)
 
 ![Skills-Harness Desktop](docs/images/mainstream-home-zh.png)
+
+### 📥 Direct Downloads
+
+| Version | Asset | Description |
+| :--- | :--- | :--- |
+| **Windows Installer (Recommended)** | [**`skills-harness-Setup-0.1.14-x64.exe`**](https://github.com/WYH302/skills-harness/releases/download/v0.1.14/skills-harness-Setup-0.1.14-x64.exe) | Bundles runtime, installs without admin rights, adds desktop & start menu shortcuts |
+| **Windows Portable** | [**`skills-harness-0.1.14-Windows-x64.exe`**](https://github.com/WYH302/skills-harness/releases/download/v0.1.14/skills-harness-0.1.14-Windows-x64.exe) | Single executable, zero residue, runs directly from anywhere |
 
 ## Overview
 

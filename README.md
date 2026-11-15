@@ -6,9 +6,21 @@
 **将分散在各 AI 网页、AI 的 App、AI 的软件、AI 本地编程工具中的聊天历史（包括 GPT、Claude、Gemini、Codex、Claude Code、Cursor、DeepSeek Harness、OpenClaw、Hermes 等等），自动提炼为 Skills（`SKILL.md`）。**  
 **Automatically distill chat histories across AI web pages, apps, software, and local coding agent tools (including GPT, Claude, Gemini, Codex, Claude Code, Cursor, DeepSeek Harness, OpenClaw, Hermes, etc.) into Skills (`SKILL.md`).**
 
-[中文说明](#-项目简介) · [English Guide](#-english-overview) · [安装与运行](#-快速开始--quick-start) · [支持矩阵](#-支持平台矩阵--supported-ecosystem) · [隐私与安全](#-隐私与安全架构--privacy--security)
+[![Release](https://img.shields.io/github/v/release/WYH302/skills-harness?color=2563eb&label=Windows%20Release&logo=windows)](https://github.com/WYH302/skills-harness/releases/latest)
+[![License: MIT](https://img.shields.io/badge/License-MIT-emerald.svg)](LICENSE)
+[![Platform](https://img.shields.io/badge/Platform-Windows%20x64-neutral.svg)](https://github.com/WYH302/skills-harness/releases/latest)
+[![Tests](https://img.shields.io/badge/Tests-145%2F145%20Passing-success.svg)](tests/)
+
+[🚀 立即下载安装包 (Releases)](https://github.com/WYH302/skills-harness/releases/latest) · [中文说明](#-项目简介) · [English Guide](#-english-overview) · [安装与运行](#-快速开始--quick-start) · [支持矩阵](#-支持平台矩阵--supported-ecosystem) · [隐私与安全](#-隐私与安全架构--privacy--security)
 
 ![Skills-Harness Desktop](docs/images/mainstream-home-zh.png)
+
+### 📥 一键下载体验 / Direct Downloads
+
+| 版本 / Version | 文件名 / Asset | 说明 / Description |
+| :--- | :--- | :--- |
+| **Windows 一键安装版 (推荐)** | [**`skills-harness-Setup-0.1.14-x64.exe`**](https://github.com/WYH302/skills-harness/releases/download/v0.1.14/skills-harness-Setup-0.1.14-x64.exe) | 自带完整运行环境，无需管理员提权，自动生成桌面图标 |
+| **Windows 便携免安装版** | [**`skills-harness-0.1.14-Windows-x64.exe`**](https://github.com/WYH302/skills-harness/releases/download/v0.1.14/skills-harness-0.1.14-Windows-x64.exe) | 单文件双击即开，零系统残留，适合移动便携使用 |
 
 ---
 
