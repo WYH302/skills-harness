@@ -4,6 +4,7 @@ release/
 test-results/
 playwright-report/
 .private/
+paper/
 .env*
 *.sqlite*
 *.db*

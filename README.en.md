@@ -23,15 +23,25 @@
 
 ## Overview
 
-**Skills-Harness** is a local-first desktop application that discovers your saved conversations across web AI assistants and local coding harnesses, filters out noise locally using **Contrastive Trajectory Submodular Selection (`CTSS`)**, and distills repeatable procedures, user preferences, and corrections into standard `SKILL.md` packages.
+**Skills-Harness** is a modest, local-first desktop utility that discovers your saved conversations across web AI assistants and local coding harnesses, filters out noise locally using **Contrastive Trajectory Submodular Selection (`CTSS`)**, and organizes repeatable procedures, user preferences, and corrections into standard `SKILL.md` packages. There is still plenty of room for improvement—suggestions, issues, and pull requests are always welcome.
 
 - **22 Supported History Sources**:
   - **Local Agent Harnesses**: Codex (`~/.codex`), Claude Code (`~/.claude`), Google Antigravity (`~/.gemini/antigravity`), Gemini CLI (`~/.gemini`), OpenClaw (`~/.openclaw`), Hermes Agent (`~/.hermes`), DeepSeek Harness (`~/.deepseek`), Cursor, and OpenCode.
   - **Web Assistants & File Imports**: ChatGPT, Claude, Gemini, DeepSeek, Grok, Perplexity, Doubao, Qwen, Kimi, Tencent Yuanbao, Microsoft Copilot, GitHub Copilot, and Meta AI.
 - **Reuse Signed-In Generation Tools (No Extra API Setup Needed)**:
   - Connects to your signed-in **Codex**, **Claude Code**, **Google Antigravity (`agy`)**, **Gemini CLI**, **OpenClaw**, **Hermes Agent**, **DeepSeek Harness**, or **Cursor** CLI, local **Ollama** models, **OpenAI-compatible APIs**, or the **0-call Local Extraction Engine**.
-- **Clean `SKILL.md` Output & One-Click Agent Installation**:
-  - Generates clean `SKILL.md` files without clutter and installs them directly into `~/.codex/skills`, `~/.claude/skills`, `~/.gemini/antigravity/skills`, `~/.gemini/skills`, `~/.openclaw/skills`, `~/.hermes/skills`, `~/.deepseek/skills`, or `~/.cursor/skills`.
+- **Clean `SKILL.md` Output & Optional Agent Installation**:
+  - Generates clean `SKILL.md` files without clutter and installs them into `~/.codex/skills`, `~/.claude/skills`, `~/.gemini/antigravity/skills`, `~/.gemini/skills`, `~/.openclaw/skills`, `~/.hermes/skills`, `~/.deepseek/skills`, or `~/.cursor/skills`.
+
+## Workflow & Interface Gallery
+
+![Skills-Harness Workflow Overview](docs/images/framework-overview.jpg)
+
+| Workbench Home | History Sources |
+| :---: | :---: |
+| ![Workbench Home](docs/images/mainstream-home-zh.png) | ![History Sources Picker](docs/images/sources-picker-zh.png) |
+| **Generation Tools** | **Settings & Privacy** |
+| ![Generation Assistants Picker](docs/images/assistants-picker-zh.png) | ![Settings and Privacy](docs/images/settings-privacy-zh.png) |
 
 ## Quick Start
 

@@ -11,7 +11,7 @@
 [![Platform](https://img.shields.io/badge/Platform-Windows%20x64-neutral.svg)](https://github.com/WYH302/skills-harness/releases/latest)
 [![Tests](https://img.shields.io/badge/Tests-145%2F145%20Passing-success.svg)](tests/)
 
-[🚀 立即下载安装包 (Releases)](https://github.com/WYH302/skills-harness/releases/latest) · [中文说明](#-项目简介) · [English Guide](#-english-overview) · [安装与运行](#-快速开始--quick-start) · [支持矩阵](#-支持平台矩阵--supported-ecosystem) · [隐私与安全](#-隐私与安全架构--privacy--security)
+[🚀 立即下载安装包 (Releases)](https://github.com/WYH302/skills-harness/releases/latest) · [中文说明](#-项目简介) · [English Guide](#-english-overview) · [架构与界面预览](#️-架构流程与界面预览--architecture--ui-gallery) · [安装与运行](#-快速开始--quick-start) · [支持矩阵](#-支持平台矩阵--supported-ecosystem) · [隐私与安全](#-隐私与安全架构--privacy--security)
 
 ![Skills-Harness Desktop](docs/images/mainstream-home-zh.png)
 
@@ -26,13 +26,13 @@
 
 ## 📌 项目简介
 
-在日常开发与研究工作中，我们与各种 AI 网页助手（ChatGPT、Claude、Gemini、DeepSeek、千问、豆包等）以及本地 Agent 工具（Codex、Claude Code、Google Antigravity `agy`、Gemini CLI、OpenClaw、Hermes Agent、DeepSeek Harness、Cursor、OpenCode 等）产生了数以千计的多轮对话。其中蕴含着大量经过反复调试才跑通的 **标准操作流程（SOP）**、**个人格式规范** 与 **避坑纠正经验**，但它们往往被淹没在冗长的历史记录里。
+在日常开发与学习过程中，我们与各种 AI 网页助手（ChatGPT、Claude、Gemini、DeepSeek、千问、豆包等）以及本地 Agent 工具（Codex、Claude Code、Google Antigravity `agy`、Gemini CLI、OpenClaw、Hermes Agent、DeepSeek Harness、Cursor、OpenCode 等）积累了许多多轮对话。其中不少经过反复尝试才梳理清楚的 **操作步骤**、**个人格式习惯** 与 **排错纠正记录**，很容易散落在不同工具的历史记录里被遗忘。
 
-**Skills-Harness** 是一个 **本地优先（Local-First）** 的桌面端工程化工具：
-1. **自动发现本机与网页历史**：自动识别本机已安装的 Agent 会话存储（含 Windows 原生目录与 WSL 环境），并通过配套浏览器扩展或导出文件接入网页端对话历史。
-2. **本地预筛与聚类（CTSS 算法）**：在调用任何大模型之前，先在本机通过 **对比轨迹子模选择（Contrastive Trajectory Submodular Selection, CTSS）** 与稀疏 TF-IDF 特征聚类，剔除单次闲聊、重复日志与废弃分支，将原始历史压缩 **95%+**，仅保留高价值的程序性片段与用户纠正。
-3. **免配 API 沿用已登录生成工具**：历史来源与生成工具分别独立检测。可直接复用本机已登录的 **ChatGPT (Codex)**、**Claude Code**、**谷歌反重力 (Google Antigravity / `agy`)**、**Gemini CLI**、**OpenClaw**、**Hermes Agent**、**DeepSeek Harness**、**Cursor** 账户配额，或连接本机 **Ollama** 及任意 **OpenAI 兼容 API**，也可使用 **0 外部调用的本机离线提炼引擎**。
-4. **纯净标准 `SKILL.md` 产出与一键安装**：生成符合 Agent Skills 规范的纯净 `SKILL.md`（包含触发条件、输入、执行步骤、个人要求、输出及例外纠正），支持版本对比、回滚、ZIP 导出，或一键安装至各大本地 Agent 的 `skills` 目录。
+**Skills-Harness** 是一个 **本地优先（Local-First）** 的小型桌面工具，尝试把这些零散记录整理成可复用的 `SKILL.md`（项目目前仍有不少粗糙与待完善之处，欢迎大家随时批评指正或二次修改）：
+1. **自动发现本机与网页历史**：只读识别本机已安装的 Agent 会话目录（含 Windows 原生目录与 WSL 环境），也可通过配套浏览器扩展或导出文件接入网页端对话历史。
+2. **本地预筛与去重聚类（CTSS）**：在调用任何大模型之前，先在本机通过 **对比轨迹子模选择（Contrastive Trajectory Submodular Selection, CTSS）** 与稀疏词法特征聚类，筛掉日常寒暄、重复报错输出与临时子任务循环，尽量只保留包含有效步骤与人工纠正的片段。
+3. **沿用已登录生成工具（无需另配 API）**：历史来源与生成工具分别独立检测。可沿用本机已登录的 **ChatGPT (Codex)**、**Claude Code**、**谷歌反重力 (Google Antigravity / `agy`)**、**Gemini CLI**、**OpenClaw**、**Hermes Agent**、**DeepSeek Harness**、**Cursor** 账户，或连接本机 **Ollama** 及 **OpenAI 兼容 API**，也可直接使用 **0 外部调用的本机离线提炼方式**。
+4. **生成简洁标准的 `SKILL.md` 并按需安装**：生成结构清晰的纯净 `SKILL.md`（含触发条件、输入、执行步骤、个人要求、预期输出与例外纠正），支持版本对比、回滚、ZIP 导出，或按需写入本地 Agent 的 `skills` 目录。
 
 ---
 
@@ -40,13 +40,33 @@
 
 > **Welcome to modify, improve, and build upon this work — critiques, issues, and pull requests are warmly welcomed!**
 
-**Skills-Harness** is a **local-first desktop engineering harness** (built with Electron, React, TypeScript, and Node SQLite) that distills massive, scattered AI chat logs and coding agent trajectories into clean, reusable **Agent Skills (`SKILL.md`)**.
+**Skills-Harness** is a humble, **local-first desktop utility** (built with Electron, React, TypeScript, and Node SQLite) designed to help organize scattered AI chat logs and local coding agent sessions into clean, reusable **Agent Skills (`SKILL.md`)**. It is an evolving open-source effort with plenty of room for improvement—feedback and forks are always appreciated.
 
 ### Key Highlights
-- **Multi-Source History Collection**: Automatically discovers local session stores from **Codex**, **Claude Code**, **Google Antigravity (`agy`)**, **Gemini CLI**, **OpenClaw**, **Hermes Agent**, **DeepSeek Harness**, **Cursor**, and **OpenCode** (across native OS paths and WSL), plus web histories (**ChatGPT**, **Claude**, **Gemini**, **DeepSeek**, **Grok**, **Perplexity**) via a paired Manifest V3 browser extension or file imports (**Doubao**, **Qwen**, **Kimi**, **Yuanbao**, **Copilot**, **Meta AI**).
-- **Local Pre-Screening & Compression (`CTSS`)**: Runs **Contrastive Trajectory Submodular Selection (`CTSS`)** and sparse lexical clustering 100% locally before any LLM call—filtering out status noise, subagent loops, and one-off chats while compressing raw token volume by **95%+**.
-- **Bring Your Own Signed-In Harness (Zero Extra API Setup)**: History sources and generation tools are detected independently. Reuse your existing signed-in **Codex**, **Claude Code**, **Google Antigravity (`agy`)**, **Gemini CLI**, **OpenClaw**, **Hermes Agent**, **DeepSeek Harness**, or **Cursor** CLI account, connect a local **Ollama** model, configure an **OpenAI-compatible API**, or run the **0-call Local Extraction Engine**.
-- **Clean `SKILL.md` Synthesis & One-Click Delivery**: Produces concise, standard `SKILL.md` files (`When to use`, `Inputs`, `Procedure`, `Preferences`, `Expected output`, `Exceptions and corrections`) with version history, diff review, portable `.zip` export, and one-click installation into detected agent skill directories.
+- **Multi-Source History Collection**: Read-only discovery of local session stores from **Codex**, **Claude Code**, **Google Antigravity (`agy`)**, **Gemini CLI**, **OpenClaw**, **Hermes Agent**, **DeepSeek Harness**, **Cursor**, and **OpenCode** (across native OS paths and WSL), plus web histories (**ChatGPT**, **Claude**, **Gemini**, **DeepSeek**, **Grok**, **Perplexity**) via a paired Manifest V3 browser extension or file imports (**Doubao**, **Qwen**, **Kimi**, **Yuanbao**, **Copilot**, **Meta AI**).
+- **Local Pre-Screening & Compression (`CTSS`)**: Runs **Contrastive Trajectory Submodular Selection (`CTSS`)** and sparse lexical clustering locally on CPU before any optional LLM step—filtering out status chatter and subagent loops while keeping concise procedural turns and user corrections.
+- **Reuse Signed-In Harnesses (No Extra API Setup Required)**: History sources and generation tools are detected separately. Reuse an already signed-in **Codex**, **Claude Code**, **Google Antigravity (`agy`)**, **Gemini CLI**, **OpenClaw**, **Hermes Agent**, **DeepSeek Harness**, or **Cursor** CLI account, connect a local **Ollama** model, configure an **OpenAI-compatible API**, or run the **0-call Local Extraction Engine**.
+- **Clean `SKILL.md` Synthesis & Optional Delivery**: Produces standard `SKILL.md` files (`When to use`, `Inputs`, `Procedure`, `Preferences`, `Expected output`, `Exceptions and corrections`) with revision diffing, portable `.zip` export, and optional installation into local agent skill folders.
+
+---
+
+## 🖼️ 架构流程与界面预览 / Architecture & UI Gallery
+
+### 1. 工作流程示意 / Workflow Architecture
+
+![Skills-Harness Workflow Overview](docs/images/framework-overview.jpg)
+
+> **流程简述 / Pipeline Summary**：**(1) 多平台只读接入与去噪**（过滤自动回放与内部子代理循环） $\rightarrow$ **(2) 本机零调用 CTSS 预筛**（提取动作步骤与人工纠正片段，大幅压缩输入体积） $\rightarrow$ **(3) 冲突检查与步骤对齐**（避免相反规则混并，核对原文出处） $\rightarrow$ **(4) 纯净 `SKILL.md` 产出与本地安装**。
+
+### 2. 桌面端界面一览 / Desktop Interface Gallery
+
+| 工作台首页 / Workbench Home | 历史来源管理 / History Sources |
+| :---: | :---: |
+| ![Workbench Home](docs/images/mainstream-home-zh.png) | ![History Sources Picker](docs/images/sources-picker-zh.png) |
+| 本地预筛与生成入口，支持中英双语实时切换<br>*Clean local-first workbench with instant ZH/EN toggle* | 独立管理本机 Agent 会话、浏览器连接与导出文件<br>*Manage local session stores, browser bridge, and file imports* |
+| **生成助手选择 / Generation Tools** | **设置与隐私保护 / Settings & Privacy** |
+| ![Generation Assistants Picker](docs/images/assistants-picker-zh.png) | ![Settings and Privacy](docs/images/settings-privacy-zh.png) |
+| 沿用已登录 CLI 账号、本机 Ollama、兼容 API 或离线提炼<br>*Reuse signed-in CLIs, local Ollama, APIs, or 0-call local engine* | 数据仅保存在本机 SQLite，支持示例工作空间隔离体验<br>*100% local SQLite storage with isolated demo workspace* |
 
 ---
 
