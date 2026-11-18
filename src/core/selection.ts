@@ -9,7 +9,7 @@ export const SELECTION_VERSION='local-tfidf-context-v1';
 export const CTSS_ALGORITHM_VERSION='ctss-submodular-v2';
 
 const correction=/^[\s\S]{0,80}(?:不对|不行|不要这样|没解决|失败|改成|修正|纠正|不满意|\b(?:wrong|failed|instead|incorrect|didn.t work|not working|fix this|broken)\b)/i;
-const trajectoryRefinement=/(?:不对|不行|不要|没解决|失败|改成|修正|纠正|不满意|报错|错误|还是|但是|不过|必须|严禁|注意|调整|\b(?:wrong|failed|instead|incorrect|didn.t work|not working|fix|broken|error|bug|however|actually|wait|should be|make sure|do not|don.t|must not|change to|modify)\b)/i;
+const trajectoryRefinement=/(?:不对|不行|不要|没解决|失败|改成|修正|纠正|不满意|报错|错误|还是|但是|不过|必须|严禁|注意|调整|\b(?:wrong|failed|instead|incorrect|didn.t work|not working|fix|broken|error|bug|however|actually|wait|should be|make sure|never|forbid|do not|don.t|must not|change to|modify)\b)/i;
 const exception=/例外|除非|仅当|第\s*\d+\s*种条件|重要分析|普通问题|\b(?:unless|except|only when|simple tasks|complex tasks|edge case|boundary|if and only if)\b/i;
 const accepted=/很好|满意|成功了|解决了|就按这个|符合要求|\b(?:that works|looks good|approved|perfect|thanks|solved|works now)\b/i;
 const isAcceptedFeedback=(text:string)=>text.length<=320&&accepted.test(text)&&!correction.test(text)&&!/[?？]|删掉|可以吗|行吗|对吗|是吗|如果全部完成了|last approval assessment/i.test(text);
