@@ -1,4 +1,4 @@
-> **欢迎大家再我的基础上进行二次修改改进，欢迎批评指正。**  
+> **欢迎大家在我的基础上进行二次修改改进，欢迎批评指正。**  
 > **Welcome to modify, improve, and build upon this work — critiques, issues, and pull requests are warmly welcomed!**
 
 # Skills-Harness (`skills-harness`)
@@ -6,6 +6,7 @@
 **将分散在各 AI 网页、AI 的 App、AI 的软件、AI 本地编程工具中的聊天历史（包括 GPT、Claude、Gemini、Codex、Claude Code、Cursor、DeepSeek Harness、OpenClaw、Hermes 等等），自动提炼为 Skills（`SKILL.md`）。**  
 **Automatically distill chat histories across AI web pages, apps, software, and local coding agent tools (including GPT, Claude, Gemini, Codex, Claude Code, Cursor, DeepSeek Harness, OpenClaw, Hermes, etc.) into Skills (`SKILL.md`).**
 
+[![CI](https://github.com/WYH302/skills-harness/actions/workflows/ci.yml/badge.svg)](https://github.com/WYH302/skills-harness/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/WYH302/skills-harness?color=2563eb&label=Windows%20Release&logo=windows)](https://github.com/WYH302/skills-harness/releases/latest)
 [![License: MIT](https://img.shields.io/badge/License-MIT-emerald.svg)](LICENSE)
 [![Platform](https://img.shields.io/badge/Platform-Windows%20x64-neutral.svg)](https://github.com/WYH302/skills-harness/releases/latest)
