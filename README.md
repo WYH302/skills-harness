@@ -134,6 +134,7 @@
 
 ### 环境要求 / Prerequisites
 - **Node.js**: `>= 22.5.0`（推荐使用 **Node.js 24 LTS**，内置 `node:sqlite` 支持）
+- **Python（可选，用于统计分析与图表复现）**: Python `>= 3.10`，依赖清单见 [`requirements.txt`](requirements.txt)（`pip install -r requirements.txt`）
 - **OS**: Windows 10/11 (x64)、macOS 或 Linux
 
 ### 1. 安装依赖 / Install Dependencies
@@ -195,6 +196,22 @@ skills-harness/
 ├── examples/            # 100% 人工合成的公开测试样例与基准数据（不含任何个人隐私数据）
 ├── tests/               # 适配器、核心提炼管线、CTSS 选择算法与 Electron E2E 测试套件
 └── scripts/             # 构建、开发与打包辅助脚本
+```
+
+---
+
+## 📚 引用格式 / Citation
+
+如果本项目的开源代码、评测脚本或设计思路对你的研究与工程实践有所参考，欢迎引用（项目仍在持续完善，随时欢迎提 Issue 与 PR 批评指正）：
+
+```bibtex
+@software{wu2026skillsharness,
+  author  = {Wu, Yonghao},
+  title   = {Skills-Harness: Distilling Verifiable Agent Skills from Noisy Conversational Logs via Contrastive Submodular Selection and Anchor-DAG Synthesis},
+  year    = {2026},
+  url     = {https://github.com/WYH302/skills-harness},
+  license = {MIT}
+}
 ```
 
 ---

@@ -4,7 +4,10 @@ release/
 test-results/
 playwright-report/
 .private/
+experiments/
 paper/
+business/
+others/
 .env*
 *.sqlite*
 *.db*

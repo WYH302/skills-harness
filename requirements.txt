@@ -1,0 +1,7 @@
+# Python dependencies for evaluation telemetry, statistical analysis, and figure generation
+# (Desktop application and TypeScript core pipeline run on Node.js >= 22.5.0 via package.json)
+matplotlib>=3.10.0,<4.0
+numpy>=2.0.0,<3.0
+scipy>=1.14.0,<2.0
+Pillow>=11.0.0,<13.0
+python-pptx>=1.0.0,<2.0

@@ -46,6 +46,9 @@
 
 ## Quick Start
 
+- **Desktop App & Core Pipeline**: Node.js `>= 22.5.0` (Node.js 24 LTS recommended, with built-in `node:sqlite`).
+- **Optional Python Analysis & Plot Dependencies**: Python `>= 3.10` with `pip install -r requirements.txt`.
+
 ```bash
 npm install
 npm run build
@@ -57,6 +60,20 @@ Run tests and typecheck:
 ```bash
 npm run typecheck
 npm test
+```
+
+## Citation
+
+If you find this modest open-source workbench or its distillation pipeline helpful for your research or engineering workflow, you are welcome to cite it:
+
+```bibtex
+@software{wu2026skillsharness,
+  author  = {Wu, Yonghao},
+  title   = {Skills-Harness: Distilling Verifiable Agent Skills from Noisy Conversational Logs via Contrastive Submodular Selection and Anchor-DAG Synthesis},
+  year    = {2026},
+  url     = {https://github.com/WYH302/skills-harness},
+  license = {MIT}
+}
 ```
 
 ## License
