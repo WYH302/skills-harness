@@ -8,8 +8,17 @@ export async function fixtureModel(options:{beforeReply?:()=>Promise<void>;engli
   const server=createServer(async(req,res)=>{
     if(req.url==='/v1/models'){res.writeHead(200,{'Content-Type':'application/json'});res.end(JSON.stringify({data:[{id:'deterministic-ui-fixture'}]}));return;}
     calls++;let body='';for await(const chunk of req)body+=chunk;
-    const request=JSON.parse(body);const historical=JSON.parse(request.messages[1].content);const messages=historical.messages as {id:string;role:string;text:string}[];
+    const request=JSON.parse(body);const historical=JSON.parse(request.messages[1].content);
     await options.beforeReply?.();
+    if(Array.isArray(historical.episodes)){
+      const eps=historical.episodes as {id:string;goal:string;steps:{index:number;text:string}[]}[];
+      const byKey=new Map<string,typeof eps>();
+      for(const e of eps){const key=JSON.stringify([e.goal,e.steps.map(s=>s.text)]);const list=byKey.get(key)||[];list.push(e);byKey.set(key,list);}
+      const groups=[...byKey.values()].map(list=>({episodeIds:list.map(e=>e.id),steps:list[0].steps.map((s,idx)=>({use:{episodeId:list[0].id,index:s.index},from:list.map(e=>({episodeId:e.id,index:e.steps[idx].index}))}))}));
+      res.writeHead(200,{'Content-Type':'application/json'});res.end(JSON.stringify({choices:[{message:{content:JSON.stringify({groups})}}],usage:{prompt_tokens:100,completion_tokens:100}}));
+      return;
+    }
+    const messages=historical.messages as {id:string;role:string;text:string}[];
     const episodes=messages.filter(m=>m.role==='assistant'&&procedureSteps(m.text).length>=3).map(m=>{
       const prefix=m.id.split(':')[0];const users=messages.filter(u=>u.role==='user'&&u.id.startsWith(prefix+':'));
       const requirement=users.find(u=>/验收(?:标准|要求)/.test(u.text));const rubric=requirement?.text.split('\n').find(line=>/^验收(?:标准|要求)/.test(line));

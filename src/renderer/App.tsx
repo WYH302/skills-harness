@@ -37,7 +37,7 @@ export function App() {
     return()=>{unsubscribe();if(timer)clearTimeout(timer);};
   },[refresh]);
   useEffect(()=>{if(state)document.documentElement.lang=state.settings.language==='zh'?'zh-CN':'en';},[state?.settings.language]);
-  useEffect(()=>{if(autoOpenRun&&state?.run?.id===autoOpenRun&&state.run.status==='completed'&&!setup&&!confirmation){if((state.run.skills>0||!state.demo&&state.stats.skills>0)&&page==='collect')setPage('library');setAutoOpenRun(null);}},[autoOpenRun,state?.run?.id,state?.run?.status,state?.run?.skills,state?.demo,state?.stats.skills,page,setup,confirmation]);
+  useEffect(()=>{if(autoOpenRun&&state?.run?.id===autoOpenRun&&state.run.status==='completed'&&!setup&&!confirmation){if(state.run.skills>0&&page==='collect')setPage('library');setAutoOpenRun(null);}},[autoOpenRun,state?.run?.id,state?.run?.status,state?.run?.skills,page,setup,confirmation]);
   useEffect(()=>{if(!setup)return;const timer=setInterval(()=>{void refresh().catch(()=>{});},3000);return()=>clearInterval(timer);},[setup,refresh]);
   useEffect(()=>{if(!toast)return;const timer=setTimeout(()=>setToast(null),toast.error?15000:5500);return()=>clearTimeout(timer);},[toast]);
   const findSkills=useCallback(async()=>{if(await navigate('library'))setTimeout(()=>document.querySelector<HTMLInputElement>('.library-toolbar input')?.focus(),80);},[navigate]);
