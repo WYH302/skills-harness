@@ -3,6 +3,8 @@ dist/
 release/
 test-results/
 playwright-report/
+.pytest_cache/
+__pycache__/
 .private/
 experiments/
 paper/

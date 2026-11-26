@@ -43,7 +43,7 @@ export function validateSkill(markdown:string,directoryName?:string,resources?:S
   if(!/trigger|when to use|触发|适用/i.test(body))issues.push('Missing activation conditions / 缺少触发条件');
   if(!/output|输出|交付/i.test(body))issues.push('Missing expected output / 缺少交付要求');
   if(body.length>24000)warnings.push('Long skill: consider moving detail into references.');
-  if(/ignore (?:all |previous |system )*instructions|忽略(?:所有|之前|系统).*指令|exfiltrat|upload.*(?:secret|credentials)/i.test(body))issues.push('Potential authority escalation: review and remove unsafe instructions');
+  if(/ignore (?:all |any |previous |prior |system |above )*(?:instructions|rules|constraints|prompts)|disregard (?:previous|system|all) (?:instructions|rules)|override (?:system|safety|developer) (?:prompt|policy|instructions)|忽略(?:所有|全部|之前|先前|系统).{0,6}(?:指令|规则|约束|提示)|无视(?:之前|系统).{0,6}(?:规则|限制)|(?:exfiltrat|steal|leak|transmit|upload).{0,60}(?:secret|credentials|api[_-]?key|\.env|id_rsa|~\/\.ssh)|(?:curl|wget)\s+[^|\n]+\|\s*(?:ba)?sh|base64\s+-d\s*\|\s*(?:ba)?sh|<!--[\s\S]{0,400}(?:ignore|override|exfiltrat|system prompt)[\s\S]{0,400}-->/i.test(body))issues.push('Potential authority escalation: review and remove unsafe instructions');
   if(redact(markdown)!==markdown)warnings.push('Potential personal data: review the redacted export before sharing. / 可能含个人信息，请检查脱敏导出。');
   if(/```(?:bash|sh|powershell|python|js)/i.test(body))warnings.push('Embedded code is reference material and is never executed automatically.');
   const resCheck=validateResources(resources);

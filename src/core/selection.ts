@@ -27,6 +27,7 @@ export interface TrajectoryProfile {
   repairConstraints: Map<string, number>;
   negativeToPositiveTransitions: number;
   toolClosures: number;
+  toolFailures?: number;
   contrastiveDensity: number;
   charCost: number;
 }
@@ -90,6 +91,8 @@ export interface SelectionPlan {groups:MaterialGroup[];local:Map<string,Episode[
  * [INTENT -> ATTEMPT -> REJECTION/CONSTRAINT -> TOOL_CLOSURE -> VERIFIED_ACTION]
  * and extracts action-anchor primitives plus contrastive repair constraints.
  */
+const toolErrorPattern=/(?:Error:|Traceback \(most recent|FAILED\b|not ok |exit code\s+[1-9]\d*|non-zero exit|AssertionError|TypeError|SyntaxError|ModuleNotFoundError|Command failed|ERR!|panic:)/i;
+
 export function extractTrajectoryProfile(messages: Message[], methodText: string): TrajectoryProfile {
   const firstUser = requestIndex(messages);
   const firstAnswer = messages.findIndex(m => m.role === 'assistant' && !m.toolName);
@@ -97,14 +100,30 @@ export function extractTrajectoryProfile(messages: Message[], methodText: string
   const repairConstraints = new Map<string, number>();
   let negativeToPositiveTransitions = 0;
   let toolClosures = 0;
+  let toolFailures = 0;
   let pendingRepair = false;
 
   for (let i = 0; i < messages.length; i++) {
     const m = messages[i];
     if (m.role === 'system') continue;
     if (m.role === 'tool' || !!m.toolName) {
-      states.push('TOOL_CLOSURE');
-      if (!/Error:|Traceback|FAILED|not ok /i.test(m.text)) toolClosures++;
+      // Language-agnostic execution convergence signal (Fail -> Edit/Retry -> Pass):
+      // captures execution-driven repairs even without explicit natural-language negation.
+      if (toolErrorPattern.test(m.text)) {
+        states.push('REJECTION');
+        toolFailures++;
+        pendingRepair = true;
+        for (const t of [...tokens(m.text.slice(0, 400))].slice(0, 5)) {
+          repairConstraints.set(`EXEC_FIX:${t}`, (repairConstraints.get(`EXEC_FIX:${t}`) || 0) + 0.9);
+        }
+      } else {
+        states.push('TOOL_CLOSURE');
+        toolClosures++;
+        if (pendingRepair) {
+          negativeToPositiveTransitions++;
+          pendingRepair = false;
+        }
+      }
       continue;
     }
     if (m.role === 'user') {
@@ -200,6 +219,7 @@ export function extractTrajectoryProfile(messages: Message[], methodText: string
     repairConstraints,
     negativeToPositiveTransitions,
     toolClosures,
+    toolFailures,
     contrastiveDensity,
     charCost
   };
@@ -310,19 +330,225 @@ export function chooseLegacyCosine(items:Material[],vectors:Map<string,Vector>):
   function merit(item:Material):number {const redundancy=Math.max(0,...chosen.map(peer=>dot(vectors.get(item.id)!,vectors.get(peer.id)!)));const diversity=chosen.every(peer=>peer.c.id!==item.c.id)?2:0;const source=chosen.every(peer=>peer.c.source!==item.c.source)?1:0;return (1-redundancy)*4+diversity+source+item.score*.1;}
 }
 
+export interface PureCELFCandidate {
+  id: string;
+  actionPrimitives: Map<string, number>;
+  repairConstraints: Map<string, number>;
+  cost: number;
+}
+
+export interface PureCELFOptions {
+  lambda?: number;
+  adaptiveLambda?: boolean;
+  alpha?: number;
+  useSubmodular?: boolean;
+  actionWeights?: Map<string, number>;
+  repairWeights?: Map<string, number>;
+}
+
+export interface PureCELFResult<T> {
+  selected: T[];
+  usedCost: number;
+  reEvaluations: number;
+  effectiveLambda: number;
+  objectiveValue: number;
+}
+
+interface HeapNode {
+  key: number;
+  idx: number;
+  stamp: number;
+}
+
+class MaxHeap {
+  private data: HeapNode[] = [];
+  get size(): number { return this.data.length; }
+  push(node: HeapNode): void {
+    this.data.push(node);
+    let i = this.data.length - 1;
+    while (i > 0) {
+      const p = (i - 1) >> 1;
+      if (this.data[p].key >= this.data[i].key) break;
+      const tmp = this.data[p]; this.data[p] = this.data[i]; this.data[i] = tmp;
+      i = p;
+    }
+  }
+  pop(): HeapNode | undefined {
+    if (!this.data.length) return undefined;
+    const top = this.data[0];
+    const last = this.data.pop()!;
+    if (this.data.length) {
+      this.data[0] = last;
+      let i = 0;
+      const n = this.data.length;
+      while (true) {
+        const l = (i << 1) + 1, r = l + 1;
+        let best = i;
+        if (l < n && this.data[l].key > this.data[best].key) best = l;
+        if (r < n && this.data[r].key > this.data[best].key) best = r;
+        if (best === i) break;
+        const tmp = this.data[i]; this.data[i] = this.data[best]; this.data[best] = tmp;
+        i = best;
+      }
+    }
+    return top;
+  }
+}
+
+/**
+ * Exact Pure Monotone CELF Lazy-Greedy CTSS Solver (Algorithm 1 & Theorem 1):
+ *   F(S) = (100 / W_U) * sum_u w_u * sqrt(m_u(S)) + lambda * (100 / W_R) * sum_r w_r * log(1 + m_r(S))
+ * Strictly non-negative, monotone, and submodular (zero negative penalty terms),
+ * guaranteeing the (1 - 1/e) budgeted knapsack approximation ratio at alpha = 1.0
+ * together with the best-feasible-singleton check (Eq. 6).
+ */
+export function selectCTSSPureCELF<T extends PureCELFCandidate>(
+  candidates: T[],
+  budget: number,
+  options: PureCELFOptions = {}
+): PureCELFResult<T> {
+  const n = candidates.length;
+  const alpha = options.alpha ?? 1.0;
+  const useSubmodular = options.useSubmodular ?? true;
+
+  let repairBearingCount = 0;
+  const actDf = new Map<string, number>();
+  const repDf = new Map<string, number>();
+  for (const c of candidates) {
+    if (c.repairConstraints.size > 0) repairBearingCount++;
+    for (const [k] of c.actionPrimitives) actDf.set(k, (actDf.get(k) || 0) + 1);
+    for (const [k] of c.repairConstraints) repDf.set(k, (repDf.get(k) || 0) + 1);
+  }
+
+  const effectiveLambda = options.lambda !== undefined
+    ? options.lambda
+    : options.adaptiveLambda
+      ? Math.min(1.0, Math.max(0.45, 0.40 + 0.14 * Math.log(1 + n / Math.max(1, repairBearingCount))))
+      : 0.65;
+
+  const wAct = options.actionWeights ?? new Map<string, number>();
+  if (!options.actionWeights) {
+    for (const [k, df] of actDf) wAct.set(k, 1 + Math.log((n + 1) / (df + 1)));
+  }
+  const wRep = options.repairWeights ?? new Map<string, number>();
+  if (!options.repairWeights) {
+    for (const [k, df] of repDf) wRep.set(k, 1 + Math.log((n + 1) / (df + 1)));
+  }
+
+  let totalActW = 0;
+  for (const [, w] of wAct) totalActW += w;
+  let totalRepW = 0;
+  for (const [, w] of wRep) totalRepW += w;
+  const actScale = totalActW > 0 ? 100 / totalActW : 0;
+  const repScale = totalRepW > 0 ? 100 / totalRepW : 0;
+
+  const evalF = (subset: T[]): number => {
+    const mA = new Map<string, number>();
+    const mR = new Map<string, number>();
+    for (const item of subset) {
+      for (const [k] of item.actionPrimitives) mA.set(k, (mA.get(k) || 0) + 1);
+      for (const [k] of item.repairConstraints) mR.set(k, (mR.get(k) || 0) + 1);
+    }
+    let fA = 0;
+    for (const [k, cnt] of mA) fA += (wAct.get(k) || 1) * (useSubmodular ? Math.sqrt(cnt) : cnt);
+    let fR = 0;
+    if (effectiveLambda > 0) {
+      for (const [k, cnt] of mR) fR += (wRep.get(k) || 1) * (useSubmodular ? Math.log(1 + cnt) : cnt);
+    }
+    return fA * actScale + effectiveLambda * fR * repScale;
+  };
+
+  const heap = new MaxHeap();
+  let bestSingleIdx = -1;
+  let bestSingleVal = -1;
+  for (let i = 0; i < n; i++) {
+    const c = candidates[i];
+    if (c.cost > budget) continue;
+    let dA = 0;
+    for (const [k] of c.actionPrimitives) dA += wAct.get(k) || 1;
+    let dR = 0;
+    if (effectiveLambda > 0) {
+      const unitR = useSubmodular ? Math.LN2 : 1.0;
+      for (const [k] of c.repairConstraints) dR += (wRep.get(k) || 1) * unitR;
+    }
+    const val = dA * actScale + effectiveLambda * dR * repScale;
+    if (val > bestSingleVal) {
+      bestSingleVal = val;
+      bestSingleIdx = i;
+    }
+    const denom = alpha > 0 ? Math.pow(Math.max(1, c.cost) / 500, alpha) : 1.0;
+    heap.push({ key: val / denom, idx: i, stamp: 0 });
+  }
+
+  const mA = new Map<string, number>();
+  const mR = new Map<string, number>();
+  const selected: T[] = [];
+  let usedCost = 0;
+  let step = 0;
+  let reEvaluations = 0;
+
+  while (heap.size > 0) {
+    const top = heap.pop()!;
+    const cand = candidates[top.idx];
+    if (usedCost + cand.cost > budget) continue;
+    if (top.stamp === step || !useSubmodular) {
+      if (top.key <= 0) break;
+      selected.push(cand);
+      usedCost += cand.cost;
+      step++;
+      for (const [k] of cand.actionPrimitives) mA.set(k, (mA.get(k) || 0) + 1);
+      for (const [k] of cand.repairConstraints) mR.set(k, (mR.get(k) || 0) + 1);
+    } else {
+      reEvaluations++;
+      let dA = 0;
+      for (const [k] of cand.actionPrimitives) {
+        const cnt = mA.get(k) || 0;
+        dA += (wAct.get(k) || 1) * (Math.sqrt(cnt + 1) - Math.sqrt(cnt));
+      }
+      let dR = 0;
+      if (effectiveLambda > 0) {
+        for (const [k] of cand.repairConstraints) {
+          const cnt = mR.get(k) || 0;
+          dR += (wRep.get(k) || 1) * (Math.log(2 + cnt) - Math.log(1 + cnt));
+        }
+      }
+      const val = dA * actScale + effectiveLambda * dR * repScale;
+      const denom = alpha > 0 ? Math.pow(Math.max(1, cand.cost) / 500, alpha) : 1.0;
+      heap.push({ key: val / denom, idx: top.idx, stamp: step });
+    }
+  }
+
+  let greedyVal = evalF(selected);
+  if (bestSingleIdx >= 0 && bestSingleVal > greedyVal) {
+    return {
+      selected: [candidates[bestSingleIdx]],
+      usedCost: candidates[bestSingleIdx].cost,
+      reEvaluations,
+      effectiveLambda,
+      objectiveValue: bestSingleVal
+    };
+  }
+  return {
+    selected,
+    usedCost,
+    reEvaluations,
+    effectiveLambda,
+    objectiveValue: greedyVal
+  };
+}
+
 /**
  * CTSS Intra-Cluster Representative Selector (`Contrastive Trajectory Submodular Selection`):
- * Maximizes F(S) = f_coverage(S) + lambda * f_repair(S) - mu * f_redundancy(S)
- * using greedy marginal gain per token cost.
+ * Pure monotone concave submodular selector (sqrt action saturation + log(1+z) repair saturation
+ * + monotone conversation/source coverage) aligned with Algorithm 1.
  */
 export function chooseCTSS(
   items:Material[],
-  vectors:Map<string,Vector>,
-  options:{lambdaRepair?:number;muRedundancy?:number;costAlpha?:number;submodular?:boolean}={}
+  _vectors:Map<string,Vector>,
+  options:{lambdaRepair?:number;costAlpha?:number;submodular?:boolean}={}
 ):Material[] {
-  const lambda = options.lambdaRepair ?? 2.2;
-  const mu = options.muRedundancy ?? 3.2;
-  const alpha = options.costAlpha ?? 0.3;
+  const lambda = options.lambdaRepair ?? 0.65;
+  const alpha = options.costAlpha ?? 1.0;
   const useSubmodular = options.submodular ?? true;
 
   const ranked=[...items].sort((a,b)=>b.score-a.score||a.id.localeCompare(b.id));
@@ -331,11 +557,11 @@ export function chooseCTSS(
   for(const item of ranked.filter(item=>item.signals.has('exception')&&/第\s*\d+\s*种条件/.test(item.messages[0]?.text||'')))chosen.push(item);
   if(chosen.length>6)return chosen;
 
-  const coveredActions=new Map<string,number>();
-  const coveredRepairs=new Map<string,number>();
+  const countActions=new Map<string,number>();
+  const countRepairs=new Map<string,number>();
   const absorb=(item:Material)=>{
-    for(const [k,v] of item.trajectory.actionPrimitives)coveredActions.set(k,(coveredActions.get(k)||0)+Math.min(1,v*0.5));
-    for(const [k,v] of item.trajectory.repairConstraints)coveredRepairs.set(k,1-(1-(coveredRepairs.get(k)||0))*(1-Math.min(0.85,v*0.5)));
+    for(const [k] of item.trajectory.actionPrimitives)countActions.set(k,(countActions.get(k)||0)+1);
+    for(const [k] of item.trajectory.repairConstraints)countRepairs.set(k,(countRepairs.get(k)||0)+1);
   };
   for(const item of chosen)absorb(item);
 
@@ -347,23 +573,20 @@ export function chooseCTSS(
     let bestGain = -Infinity;
     for(const candidate of rest){
       let deltaCoverage = 0;
-      for(const [k,v] of candidate.trajectory.actionPrimitives){
-        const cur = coveredActions.get(k) || 0;
-        const inc = Math.min(1, v * 0.5);
-        deltaCoverage += useSubmodular ? Math.max(0, Math.min(1, cur + inc) - Math.min(1, cur)) : inc;
+      for(const [k] of candidate.trajectory.actionPrimitives){
+        const cur = countActions.get(k) || 0;
+        deltaCoverage += useSubmodular ? (Math.sqrt(cur + 1) - Math.sqrt(cur)) : 1.0;
       }
       let deltaRepair = 0;
-      for(const [k,v] of candidate.trajectory.repairConstraints){
-        const cur = coveredRepairs.get(k) || 0;
-        const p = Math.min(0.85, v * 0.5);
-        deltaRepair += useSubmodular ? (1 - cur) * p : p;
+      for(const [k] of candidate.trajectory.repairConstraints){
+        const cur = countRepairs.get(k) || 0;
+        deltaRepair += useSubmodular ? (Math.log(2 + cur) - Math.log(1 + cur)) : 1.0;
       }
       if(candidate.signals.has('correction') || candidate.signals.has('exception')){
-        deltaRepair += (1 + candidate.trajectory.negativeToPositiveTransitions) * 1.5;
+        deltaRepair += (1 + candidate.trajectory.negativeToPositiveTransitions) * 1.2;
       }
-      const maxSim = chosen.length ? Math.max(0, ...chosen.map(peer => dot(vectors.get(candidate.id)!, vectors.get(peer.id)!))) : 0;
       const diversityBonus = (chosen.every(peer => peer.c.id !== candidate.c.id) ? 1.5 : 0) + (chosen.every(peer => peer.c.source !== candidate.c.source) ? 0.8 : 0);
-      const rawMarginal = deltaCoverage + lambda * deltaRepair + diversityBonus + candidate.score * 0.08 - mu * maxSim;
+      const rawMarginal = deltaCoverage + lambda * deltaRepair + diversityBonus + candidate.score * 0.05;
       const costNorm = alpha > 0 ? Math.pow(Math.max(250, candidate.trajectory.charCost) / 600, alpha) : 1;
       const gain = rawMarginal / costNorm;
       if(gain > bestGain || (gain === bestGain && candidate.id.localeCompare(bestItem.id) < 0)){
@@ -637,82 +860,23 @@ export function evaluateSelectionMethods(
         }
       }
     } else {
-      // Ours-CTSS and its 3 Ablation variants:
-      // max_{S: cost(S) <= B} F(S) = f_coverage(S) + lambda * f_repair(S) - mu * f_redundancy(S)
-      // where f_coverage(S) and f_repair(S) are normalized monotone submodular functions in [0, 100].
-      const lambda = mode === 'ctss-no-repair' ? 0.0 : 0.28;
-      const useSubmodular = mode !== 'ctss-no-submodular';
-      const alpha = mode === 'ctss-no-cost-norm' ? 0.0 : 0.65;
-      const mu = mode === 'ctss-no-submodular' ? 0.05 : 0.85;
-      const normAct = Math.max(1, totalActionWeight);
-      const normRep = Math.max(1, totalRepairWeight);
-
-      const coveredAct = new Map<string, number>();
-      const coveredRep = new Map<string, number>();
-      const maxSimMap = new Map<string, number>();
-      const remaining = new Set<Material>(allMaterials);
-
-      while (remaining.size > 0) {
-        let bestCandidate: Material | null = null;
-        let bestGain = -Infinity;
-
-        for (const cand of remaining) {
-          const c = sampledCosts.get(cand.id)!;
-          if (usedChars + c > budgetChars) continue;
-
-          let dCov = 0;
-          for (const [k, v] of cand.trajectory.actionPrimitives) {
-            const w = actionWeights.get(k) || 1;
-            const cur = coveredAct.get(k) || 0;
-            const inc = Math.min(1, v * 0.6);
-            dCov += w * (useSubmodular ? Math.max(0, Math.min(1, cur + inc) - Math.min(1, cur)) : inc);
-          }
-          const normDCov = (dCov / normAct) * 100;
-
-          let dRep = 0;
-          if (lambda > 0) {
-            for (const [k, v] of cand.trajectory.repairConstraints) {
-              const w = repairWeights.get(k) || 1;
-              const cur = coveredRep.get(k) || 0;
-              const p = Math.min(0.85, v * 0.65);
-              dRep += w * (useSubmodular ? (1 - cur) * p : p);
-            }
-          }
-          const normDRep = (dRep / normRep) * 100 + (lambda > 0 ? cand.trajectory.negativeToPositiveTransitions * 0.08 : 0);
-
-          const maxSim = maxSimMap.get(cand.id) || 0;
-          const rawGain = normDCov + lambda * normDRep - mu * maxSim;
-          const costDenom = alpha > 0 ? Math.pow(c / 500, alpha) : 1;
-          const gain = rawGain / costDenom;
-
-          if (gain > bestGain) {
-            bestGain = gain;
-            bestCandidate = cand;
-          }
-        }
-
-        if (!bestCandidate) break;
-        selected.push(bestCandidate);
-        usedChars += sampledCosts.get(bestCandidate.id)!;
-        remaining.delete(bestCandidate);
-
-        const vBest = vectors.get(bestCandidate.id)!;
-        for (const cand of remaining) {
-          const s = dot(vectors.get(cand.id)!, vBest);
-          if (s > (maxSimMap.get(cand.id) || 0)) {
-            maxSimMap.set(cand.id, s);
-          }
-        }
-
-        for (const [k, v] of bestCandidate.trajectory.actionPrimitives) {
-          coveredAct.set(k, (coveredAct.get(k) || 0) + Math.min(1, v * 0.6));
-        }
-        for (const [k, v] of bestCandidate.trajectory.repairConstraints) {
-          const cur = coveredRep.get(k) || 0;
-          const p = Math.min(0.85, v * 0.65);
-          coveredRep.set(k, 1 - (1 - cur) * (1 - p));
-        }
-      }
+      // Unified Pure Monotone CELF CTSS (Algorithm 1 & Theorem 1):
+      const celfCandidates = allMaterials.map(item => ({
+        id: item.id,
+        item,
+        actionPrimitives: item.trajectory.actionPrimitives,
+        repairConstraints: item.trajectory.repairConstraints,
+        cost: sampledCosts.get(item.id)!
+      }));
+      const res = selectCTSSPureCELF(celfCandidates, budgetChars, {
+        lambda: mode === 'ctss-no-repair' ? 0.0 : 0.65,
+        alpha: mode === 'ctss-no-cost-norm' ? 0.0 : 1.0,
+        useSubmodular: mode !== 'ctss-no-submodular',
+        actionWeights,
+        repairWeights
+      });
+      for (const hit of res.selected) selected.push(hit.item);
+      usedChars = res.usedCost;
     }
 
     const latencyMs = Math.max(1, Math.round((performance.now() - t0) * 10) / 10);

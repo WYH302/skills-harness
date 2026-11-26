@@ -5,6 +5,7 @@ import { endpointIdentity } from './credentials';
 import { stripCodexMeta, isCodexReplay, extractJsonObject } from '../vendor/skillopt/history';
 import { cleanTaskQuality } from '../vendor/skillopt/task-contract';
 import { TASK_MINER_GUIDANCE } from '../vendor/skillopt/prompts';
+import { matchesWorkspaceStatusFilter, WORKSPACE_SELF_REPLAY_PATTERN } from './personal-filters';
 
 export const MINER_VERSION='11-procedural-purity-v2';
 export const MODEL_VALIDATION_VERSION='3-evidence-backed-actions';
@@ -24,9 +25,7 @@ function isStatusStep(step:string):boolean {
   if(/(?:重跑|编译|运行|生成|修改|修复|测试|校验|结果|更新|整理|同步|复核|落实|闭环|部署流程|语法检查)(?:均|全部|都)?(?:完成|通过|正常|成功|一致)|(?:\s|^)(?:通过|OK|全部成功|COMPLETE_VERIFIED|all_feasible=true)\s*$|^(?:推送提交|提交已经创建|本地复查通过|结果|状态|路径|文件|耗时|总结)[：:]/i.test(core))return true;
   if(/\b\d+\s*(?:\/\s*\d+\s*)?(?:tests?\s+)?(?:passed|OK|通过)\b|(?:测试|编译|日志|扫描|校验|结果|错误|引用|页码|单元测试|全量测试|总验证|完整性门禁|静态检查|健康检查)[：:\s]*(?:\d+|通过|无|0\b|PASS|ACCEPTABLE|清零|OK)|^\d+\/\d+\s*个|(?:编译错误|未定义引用|未定义交叉引用|阻断项|missing|unused)\s*[:：=]?\s*0\b/i.test(core))return true;
   if(/\bp\s*=\s*0\.\d+|\bd_z\s*=\s*0\.\d+|\baccuracy\s+0\.\d+|Macro-F1\s*为\s*0\.\d+|\b[A-Z_]{3,}=(?:0|true|false|\d+)\b|[:：]\s*\d+\s*(?:条|篇|个|页|行|封|处)\s*$|约\s*`?\d+(?:\.\d+)?\s*(?:小时|分钟)|正在(?:运行|跑)|\d+\s*篇显示\s*`|401\s+token_expired/i.test(core))return true;
-  if(/(?:严重问题|主要问题|次要[^：:]{0,6}问题|最终判断|表格整体判断|这版最重要的)[：:]|(?:论文(?:现在|最有价值|把|说明|报告|提出|的新意)|作者(?:对|已|没有|应)|需要作者(?:补充|提供|确认|公开|从|用)|不能直接生成、必须作者完成|审稿人(?:会|可能|最核心))|\b(?:The (?:statistical|derived|authors|paper|manuscript|proposed|current|main|primary)|Reproducibility remains|Uncertain,\s*needs author check|Some sentences are not|It is recommended to|Under review;\s*(?:first|second)\s*author|First author\.|Second author\.|Proficient with\s+Slurm|Hands-on experience|Native Mandarin)/i.test(core))return true;
-  if(/(?:^这说明|^所以会出现|^不是我不能|^是\s+\S+\s+子\s*Agent|^正文一共只有|^但这些\s+`\\cite|^当前客栈|^这还不是|^看起来像|^两个子代理|人家也没说|是不是应该|把下一页截图发给我|我再告诉你|此前证据主要涉及|是否导致难读|呢[？?]$|[?？]\s*$|\((?:<)?\/?(?:[A-Za-z]:[\\/]|Users\/|home\/|\[USER_HOME\])|(?:[，,；;：:\s]|^)(?:[A-Za-z]:\\[^\s`]+|\[USER_HOME\][^\s`]+)|\b(?:Table|Figure|Fig\.|Section|Eq\.|Layer|Boundary|Round)\s*(?:\d+|[IVX]+|\(\d+\)|[A-Z]\b)|表\s*\d+|图\s*\d+(?:\.\d+)?|第\s*\d+(?:[-–—、,，]\d+)*\s*[页章节]|:contentReference)/i.test(core))return true;
-  if(/(?:可调用$|全部可打开|都能正常读取|没有增删、修改或移动|病句消失|^(?:编译后的|新增直接|更新\s+\S+\s*图).*\[[^\]]+\]\()|^(?:\d[\d,]*\s*(?:个|份|封|条|篇|页|处)|`?\d{3,4}`?\s*[：:]|\[\d+\](?:\[\d+\])*\s*[：:]|`?\d{1,2}:\d{2}:\d{2}`?\s)|^(?:[\w-]+\s*[：:]\s*)?面向.+的.+(?:网络|系统|方法|模型|框架|协议|研究|导出|编译)$|^[\w\s/+.-]+(?:正式检索)?导出文件$|^(?:[a-z0-9/_-]+\s+){1,5}(?:audit|formulation|reductions?|table|protocol(?:\s*表)?)$/i.test(core))return true;
+  if(matchesWorkspaceStatusFilter(core))return true;
   return false;
 }
 const isExplicitUserSop=(text:string)=>/(?:^|\n|[：:。.\s])#+\s*(?:Role|Task|Constraints?|Instructions?|Workflow|Rules?|角色|任务|约束|核心原则|执行步骤|工作流|操作步骤)\b/i.test(text)&&!/(?:Weaknesses|Strengths|Reviewer\s*#?\d|审稿人|本文提出|我基于你上传|下面的判断基于|我先给总体结论|##\s*我的明确判断|Published (?:and Accepted )?Papers|<!DOCTYPE html>|最终文件已同步)/i.test(text);
@@ -161,7 +160,7 @@ function episodeFrom(c:Conversation,messages:Conversation['messages'],index:numb
 export function miningMessages(c:Conversation):Conversation['messages'] {
   const messages=c.messages.map(m=>m.role==='user'?{...m,text:stripCodexMeta(m.text)}:m).filter(m=>m.text.trim());
   const prompts=messages.filter(m=>m.role==='user').map(m=>m.text);
-  const selfGenerated=isCodexReplay(prompts)||prompts.some(text=>text.startsWith('[skillharbor-analysis:v1]')||/^The following is the Codex agent history (?:whose request action you are assessing|added since your last approval assessment)/i.test(text)||/#\s*SkillHarbor[：:].*改造任务书|SkillHarbor_(?:Auto_Discovery|Low_Cost|Focus_and_Membership|Mainstream_and_Bilingual)_Brief/i.test(text));
+  const selfGenerated=isCodexReplay(prompts)||prompts.some(text=>text.startsWith('[skillharbor-analysis:v1]')||/^The following is the Codex agent history (?:whose request action you are assessing|added since your last approval assessment)/i.test(text)||WORKSPACE_SELF_REPLAY_PATTERN.test(text));
   return selfGenerated?[]:messages;
 }
 export function modelView(c:Conversation,full=false):{messages:Conversation['messages'];omitted:number;excerpted:number} {
